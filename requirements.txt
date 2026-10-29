@@ -1,5 +1,11 @@
-mediapipe==1.0.1
+# mediapipe 1.0.1 aborta no macOS ao abrir detectores (Metal indisponível). A 1.2.0 funciona.
+mediapipe==1.2.0
 opencv-contrib-python>=4.14,<6
 numpy>=2.0,<3
 pyvirtualcam>=0.15,<1
-pygame>=2.6,<3
+# No macOS o áudio usa o afplay do sistema. O pygame traz um SDL que conflita com o do OpenCV.
+pygame>=2.6,<3; sys_platform != "darwin"
+# Habilita o botão de fechar e o "Encerrar" do Dock, que o OpenCV ignora no macOS.
+pyobjc-framework-Cocoa>=10,<13; sys_platform == "darwin"
+# Desenha o menu com a fonte do sistema (SF Pro). Já vem com o mediapipe, fica explícito aqui.
+pillow>=10.1

@@ -1,74 +1,152 @@
-# VanishCam — webcam disappearance effects
+# VanishCam para macOS
 
-Video is processed on your computer. It is neither recorded nor sent to a server. The preview window and virtual camera show only the video and effects, without overlaid menus, instructions, or text.
+Efeitos de desaparecimento na webcam ativados por gestos, rodando no macOS e saindo como câmera no Meet, Zoom, Teams e afins pela câmera virtual do OBS.
 
-For step-by-step instructions in English and Italian, see the [user guide](USER_GUIDE_EN_IT.md).
+Este repositório é um fork do [vanish_webcam](https://github.com/Nicovic17/vanish_webcam), feito para Windows, adaptado para o macOS. Os detalhes técnicos da adaptação estão em [docs/PORTE_MACOS.md](docs/PORTE_MACOS.md).
 
-## ☕ Buy me a coffee
+O vídeo é processado no seu computador, sem gravação e sem envio a servidores. A prévia e a câmera virtual mostram só o vídeo com o efeito, sem menus nem textos por cima.
 
-If you like this project and want to support it, you can buy me a coffee through [PayPal](https://paypal.me/nicovic17) or [Revolut](https://revolut.me/nicoauriemma).
+| Modo | Gesto | Efeito |
+| --- | --- | --- |
+| 1. Normal Vanish | V com indicador e médio | Você se dissolve no fundo em cerca de 3,6 s |
+| 2. Naruto Vanish | Palmas juntas, dedos lado a lado | Nuvem de fumaça e um tronco cai no seu lugar |
+| 3. Particles | V com indicador e médio | A silhueta vira fragmentos levados pelo vento |
+| 4. Goku | Indicador e médio juntos na testa por 1 s | Teletransporte com linhas estilo mangá. Repita o gesto para voltar |
 
-## Download for Windows
+## Documentação
 
-[Download VanishCam.exe]( https://nicoaauriemma.vercel.app/shop ) and double-click it to run the app. You do not need to install Python.
+- [Guia rápido](#guia-rápido): do zero até a prévia aberta.
+- [docs/OBS.md](docs/OBS.md): câmera virtual do OBS no Meet, Zoom, Teams, Slack e FaceTime.
+- [docs/SOLUCAO_DE_PROBLEMAS.md](docs/SOLUCAO_DE_PROBLEMAS.md): erros conhecidos e como resolver.
+- [docs/PORTE_MACOS.md](docs/PORTE_MACOS.md): o que mudou em relação ao original e por quê.
+- [AGENTS.md](AGENTS.md): instruções para assistentes de IA (Claude Code, Codex, Cursor e outros) instalarem, configurarem e modificarem o projeto.
 
-The published EXE may predate the Particles and Goku modes. To use them now, run the local scripts or rebuild the EXE from these sources.
+## Requisitos
 
-## Getting started
+- Mac com Apple Silicon. Testado no macOS 27 em arm64.
+- [Homebrew](https://brew.sh).
+- [uv](https://docs.astral.sh/uv/) (`brew install uv`) ou Python 3.10+ (`brew install python@3.12`). O Python 3.9 que vem com o macOS não serve.
+- Webcam (a embutida do Mac ou uma USB).
+- Opcional, para videochamadas: [OBS Studio](https://obsproject.com/) 30 ou mais recente (`brew install --cask obs`).
 
-1. Double-click `AVVIA_LOCALE.bat`.
-2. In the start menu, choose **Normal Vanish**, **Naruto Vanish**, **Particles**, or **Goku** with the mouse or the `1`, `2`, `3`, and `4` keys.
-3. Step out of the camera frame for 4 seconds while the background is captured. The terminal tells you when you can step back in.
+## Guia rápido
 
-**Normal Vanish:** Raise your index and middle fingers in a V sign. The dissolve starts as soon as the gesture is recognized and lasts about 3.6 seconds.
-
-**Particles:** Make the same V sign as in Normal Vanish. Your silhouette breaks into small colored fragments that drift sideways as if carried by the wind. The effect lasts about 2.1 seconds. It captures your silhouette once when the effect starts to keep the video smooth.
-
-**Goku:** Hold your index and middle fingers straight and together against your forehead for 1 second. Animated vertical comic-style lines run across your silhouette just before you teleport away and linger briefly afterward. To reappear, lower your hand, then repeat the gesture for another 1 second. The return uses the reverse effect. If you break the pose, the countdown starts over. `assets/teleport.MP3` plays on both disappearance and reappearance. The terminal shows the countdown for each gesture. The `V` and `R` keys are disabled in this mode: the gesture is the only way to disappear and reappear. No text is overlaid on the video.
-
-**Naruto Vanish:** Bring your palms together in front of the webcam, with your fingers side by side rather than interlaced. Keep both hands visible. As soon as the gesture is recognized, you vanish in a cloud of smoke and a wooden log appears, falls, and remains visible until you press `R`. No microphone is needed. Naruto mode uses `hand_landmarker.task` to track both hands. `assets/vanish.MP3` plays through your computer speakers when the disappearance starts, including when triggered with `V`. You can trigger it again after pressing `R`.
-
-To start a mode without the menu:
-
-```powershell
-local_app\AVVIA_LOCALE.bat --mode naruto
-local_app\AVVIA_LOCALE.bat --mode normal
-local_app\AVVIA_LOCALE.bat --mode particles
-local_app\AVVIA_LOCALE.bat --mode goku
+```bash
+brew install uv
+git clone https://github.com/ArthurTelles/vanishcam-macos.git
+cd vanishcam-macos
+./VanishCam.command
 ```
 
-## Virtual camera and OBS
+Também dá para clicar duas vezes em `VanishCam.command` no Finder. Na primeira vez o script cria o ambiente em `.venv`, instala as dependências de `requirements.txt` e baixa os modelos do MediaPipe para `models/`. A internet só é necessária nessa primeira execução.
 
-If [OBS Studio](https://obsproject.com/) is installed, the app automatically tries to open **OBS Virtual Camera**. The terminal shows the device name. Use `AVVIA_VIRTUAL.bat` to require a virtual camera. Select **OBS Virtual Camera** in the app that will receive the video. OBS's virtual camera must be stopped while this app is producing its output.
+1. **Permissão da câmera:** o macOS pede acesso à câmera para o app de terminal (Terminal, iTerm, VS Code...). Autorize. O app espera até 30 segundos pela resposta. Se você negou sem querer, libere em **Ajustes do Sistema > Privacidade e Segurança > Câmera** e abra o terminal de novo.
+2. **Menu:** escolha o modo com o mouse ou com as teclas `1` a `4`.
+3. **Fundo:** saia do enquadramento por 4 segundos enquanto o fundo é capturado. Saia por completo, sem cabeça, ombro ou braço aparecendo. O efeito troca você por esse fundo, e se você estiver nele vai continuar aparecendo. Um sinal sonoro avisa quando você pode voltar.
+4. **Gesto:** volte e faça o gesto do modo escolhido.
 
-To use the effect in an OBS scene, run `AVVIA_OBS.bat`, add a **Window Capture** source, select **Webcam - Anteprima**, and then start the virtual camera from OBS. Alternatively, use [Unity Capture](https://github.com/schellingb/UnityCapture) as a separate virtual video source:
+Para usar como câmera numa videochamada, siga [docs/OBS.md](docs/OBS.md). Em resumo: instale o OBS, ative a câmera virtual dele uma vez, feche o OBS, abra o VanishCam com `./VanishCam.command --virtual-camera --no-mirror` e escolha **OBS Virtual Camera** no app da chamada.
 
-```powershell
-local_app\AVVIA_VIRTUAL.bat --virtual-backend unitycapture
+## Modos em detalhe
+
+**1. Normal Vanish:** faça um V com indicador e médio. A dissolução começa assim que o gesto é reconhecido e dura cerca de 3,6 segundos.
+
+**2. Naruto Vanish:** junte as palmas na frente da webcam, com os dedos lado a lado, sem entrelaçar. Você some numa nuvem de fumaça e um tronco de madeira cai e fica no lugar até você apertar `R`. Toca `assets/vanish.MP3`.
+
+**3. Particles:** o mesmo V do Normal. A silhueta se desfaz em pequenos fragmentos levados pelo vento para o lado. Dura cerca de 2,1 segundos. A silhueta é capturada uma vez no início para manter o vídeo fluido.
+
+**4. Goku:** encoste indicador e médio juntos e esticados na testa por 1 segundo. Linhas verticais estilo mangá correm pela sua silhueta, você some em faixas verticais e as linhas ficam um instante no ar. Para reaparecer, baixe a mão e repita o gesto por mais 1 segundo. O retorno é o mesmo efeito ao contrário. Se você quebrar a pose, a contagem recomeça, e o terminal mostra a contagem. Neste modo, `V` e `R` ficam desativados.
+
+O modo Goku toca `assets/teleport.wav`, um som sintetizado pelo próprio projeto. Se quiser o som original do Instant Transmission, veja [Som do modo Goku](#som-do-modo-goku).
+
+Para abrir um modo direto, sem menu:
+
+```bash
+./VanishCam.command --mode goku
+./VanishCam.command --mode particles
+./VanishCam.command --mode naruto
+./VanishCam.command --mode normal
 ```
 
-OBS has only one virtual camera. Do not use it as both an OBS input and output at the same time. See the [pyvirtualcam documentation](https://github.com/letmaik/pyvirtualcam#supported-virtual-cameras).
+## Comandos
 
-## Controls
+Com a janela de prévia em foco:
 
-- `SPACE`: capture a new background.
-- `R`: make the person reappear.
-- `V`: manually start the selected mode's effect.
-- `F`: toggle fullscreen.
-- `Q` or `ESC`: quit and release the cameras.
+| Tecla | Ação |
+| --- | --- |
+| `ESPAÇO` | Captura um novo fundo |
+| `R` | Faz a pessoa reaparecer |
+| `V` | Dispara o efeito manualmente |
+| `M` | Volta ao menu para trocar de modo, reaproveitando o fundo já capturado |
+| `F` | Alterna tela cheia |
+| `Q` ou `ESC` | Sai e libera as câmeras |
 
-The `V` and `R` keys are disabled in Goku mode.
+O botão vermelho da janela, **Encerrar** no Dock e `Ctrl+C` no terminal também fecham o app.
 
-You can change the camera, resolution, and maximum virtual-output FPS:
+Depois que o efeito termina, a janela mostra só o fundo capturado, parado. Isso é esperado. Aperte `R`, ou repita o gesto no modo Goku, para reaparecer.
 
-```powershell
-local_app\AVVIA_LOCALE.bat --camera 1 --width 1280 --height 720 --fps 30
+## Opções de linha de comando
+
+| Opção | Padrão | Descrição |
+| --- | --- | --- |
+| `--mode {normal,naruto,particles,goku}` | menu | Pula o menu e abre o modo |
+| `--camera N` | `0` | Índice da webcam. Use `1`, `2`... para câmeras externas ou o iPhone (Câmera de Continuidade) |
+| `--width` / `--height` | `960` / `540` | Tamanho do vídeo processado e enviado à câmera virtual |
+| `--fps` | `30` | FPS máximo da câmera virtual |
+| `--no-mirror` | espelhado | Não espelha a imagem. Recomendado em chamadas |
+| `--fullscreen` | janela | Abre em tela cheia |
+| `--virtual-camera` | automático | Exige a câmera virtual e para com erro se ela não estiver disponível |
+| `--no-virtual-camera` | automático | Usa só a prévia local |
+| `--virtual-device NOME` | automático | Nome do dispositivo virtual. No macOS só existe `OBS Virtual Camera` |
+| `--gesture-debug` | desligado | Mostra no terminal o estado do reconhecimento de gestos |
+
+Sem `--virtual-camera` nem `--no-virtual-camera`, o app usa a câmera virtual se ela estiver disponível e segue só com a prévia se não estiver.
+
+O AVFoundation costuma ignorar a resolução pedida e entregar 1080p. O app reduz o frame para a largura de `--width` para manter o efeito leve.
+
+## Som do modo Goku
+
+O som original do Instant Transmission tem direitos autorais e não faz parte deste repositório. O arquivo `assets/instant_transmission.wav` está no `.gitignore`. Se ele existir, o modo Goku toca esse arquivo no lugar do `teleport.wav` sintetizado.
+
+Para usar um som seu, para uso pessoal, coloque qualquer WAV curto, de preferência com menos de 1 segundo e sem silêncio no começo, em `assets/instant_transmission.wav`. Para cortar o silêncio inicial de um arquivo que você já tem:
+
+```bash
+ffmpeg -i seu_audio.wav \
+  -af "silenceremove=start_periods=1:start_threshold=-45dB:start_silence=0.01" \
+  -ar 44100 -ac 2 assets/instant_transmission.wav
 ```
 
-To troubleshoot gesture recognition without adding text to the video, pass `--gesture-debug`. Diagnostic information appears only in the terminal.
+Os sons tocam só nos alto-falantes do Mac. A câmera virtual leva apenas vídeo, então quem está na chamada não ouve o efeito. Veja [docs/OBS.md](docs/OBS.md#e-o-som-do-efeito) para alternativas.
 
-## Visual assets
+## Testes
 
-The [wooden log](assets/substitution_log.png) is an original illustration generated with ImageGen using the supplied image as a visual reference. Smoke is drawn in real time by `naruto_effect.py` so it follows the person's position and scales with the video. We also considered a [CC0 smoke sprite sheet](https://opengameart.org/content/smoke-sprite-sheet), but the procedural animation adapts better to dynamic positioning without an additional asset. No anime frames or assets are included in the project.
+```bash
+.venv/bin/python -m unittest
+.venv/bin/python vanish_cam.py --self-test   # carrega todos os modelos e assets, sem abrir a webcam
+```
 
-Goku mode uses the [MediaPipe BlazeFace short-range model](https://github.com/google-ai-edge/mediapipe/blob/master/mediapipe/tasks/web/vision/README.md) to estimate the forehead position and `hand_landmarker.task` to track the fingers. The teleport's visual trace is drawn in code, without anime frames.
+Os testes não usam a webcam nem a câmera virtual.
+
+## Estrutura
+
+| Arquivo | Conteúdo |
+| --- | --- |
+| `VanishCam.command` | Lançador. Cria o `.venv`, instala dependências e abre o app |
+| `vanish_cam.py` | App principal: menu, câmera, calibração do fundo, gestos, modos Normal e Naruto, câmera virtual |
+| `menu_ui.py` | Menu inicial no estilo dos apps da Apple, desenhado com Pillow e a fonte SF |
+| `mac_window.py` | Ajustes das janelas do OpenCV no macOS via PyObjC |
+| `goku_effect.py` | Detecção da pose e efeito do modo Goku |
+| `particles_effect.py` | Efeito do modo Particles |
+| `naruto_effect.py` | Fumaça e tronco do modo Naruto |
+| `vanish_sound.py` | Sons sem travar o vídeo (`afplay` no macOS) |
+| `tools/make_teleport_sound.py` | Gera `assets/teleport.wav` |
+| `hand_landmarker.task` | Modelo de mãos do MediaPipe, versionado como no original |
+| `models/` | Demais modelos, baixados na primeira execução (fora do Git) |
+
+## Créditos
+
+- App original, efeitos Normal e Naruto, sprite do tronco e `assets/vanish.MP3`: [vanish_webcam](https://github.com/Nicovic17/vanish_webcam).
+- Modelos de segmentação, gestos, mãos e rosto: [MediaPipe](https://ai.google.dev/edge/mediapipe/solutions/guide), do Google.
+- Câmera virtual: [pyvirtualcam](https://github.com/letmaik/pyvirtualcam) com a extensão de câmera do [OBS Studio](https://obsproject.com/).
+
+O repositório original não declara licença. Este fork mantém o histórico e o crédito do original, e as mudanças feitas aqui seguem os mesmos termos.

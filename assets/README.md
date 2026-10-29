@@ -12,3 +12,15 @@ For smoke, the app uses its own procedurally animated shapes in
 `naruto_effect.py`. A [CC0 smoke sprite sheet](https://opengameart.org/content/smoke-sprite-sheet)
 was reviewed but is not included because the procedural smoke scales and follows
 the detected person dynamically.
+
+# Som do teletransporte
+
+`teleport.wav` é sintetizado por `tools/make_teleport_sound.py` (varredura de
+frequência com ruído curto). Não usa áudio de terceiros. Para gerar de novo:
+`.venv/bin/python tools/make_teleport_sound.py`.
+
+`instant_transmission.wav` é o efeito sonoro oficial do Instant Transmission
+(Dragon Ball), baixado de https://www.youtube.com/watch?v=LZqsxM-d-TA e cortado
+para começar sem silêncio. É material com direitos autorais, para uso pessoal:
+está no `.gitignore` e não deve ser redistribuído. Sem ele, o modo Goku toca
+`teleport.wav`.

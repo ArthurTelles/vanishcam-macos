@@ -5,12 +5,12 @@ from unittest.mock import Mock, patch
 
 import numpy as np
 
-from local_app import vanish_cam as app
-from local_app.naruto_effect import (
+import vanish_cam as app
+from naruto_effect import (
     EFFECT_SECONDS, falling_log_anchor, joined_hands_from_landmarks,
     landed_log_anchor, load_log, overlay_log, render_substitution, substitution_anchor,
 )
-from local_app.test_video_output import arguments
+from test_video_output import arguments
 
 
 class JoinedHandsTests(unittest.TestCase):
@@ -123,6 +123,7 @@ class MenuTests(unittest.TestCase):
         with ExitStack() as mocks:
             mocks.enter_context(patch.object(app.cv2, "namedWindow"))
             mocks.enter_context(patch.object(app.cv2, "setMouseCallback"))
+            mocks.enter_context(patch.object(app.cv2, "resizeWindow"))
             mocks.enter_context(patch.object(app.cv2, "imshow"))
             mocks.enter_context(patch.object(app.cv2, "destroyWindow"))
             mocks.enter_context(patch.object(app.cv2, "getWindowProperty", return_value=1))
@@ -130,6 +131,10 @@ class MenuTests(unittest.TestCase):
             self.assertEqual(app.choose_mode(), "naruto")
             key.return_value = ord("1")
             self.assertEqual(app.choose_mode(), "normal")
+            key.return_value = ord("3")
+            self.assertEqual(app.choose_mode(), "particles")
+            key.return_value = ord("4")
+            self.assertEqual(app.choose_mode(), "goku")
 
 
 class NarutoVideoLoopTests(unittest.TestCase):
@@ -155,10 +160,12 @@ class NarutoVideoLoopTests(unittest.TestCase):
             )))
             mocks.enter_context(patch.object(app.cv2, "namedWindow"))
             mocks.enter_context(patch.object(app.cv2, "resizeWindow"))
+            mocks.enter_context(patch.object(app.cv2, "getWindowProperty", return_value=1))
+            mocks.enter_context(patch.object(app, "notify_background_ready"))
             mocks.enter_context(patch.object(app.cv2, "destroyAllWindows"))
             mocks.enter_context(patch.object(app.cv2, "imshow", side_effect=lambda name, frame: preview.append(frame.copy())))
             mocks.enter_context(patch.object(app.cv2, "waitKey", side_effect=(0, 0, 0, 0, ord("q"))))
-            mocks.enter_context(patch.object(app.cv2, "putText", side_effect=AssertionError("Overlay vietato")))
+            mocks.enter_context(patch.object(app.cv2, "putText", side_effect=AssertionError("Overlay proibido")))
             mocks.enter_context(patch("builtins.print"))
             self.assertEqual(app.run(), 0)
         self.assertEqual(len(preview), 5)
@@ -166,7 +173,7 @@ class NarutoVideoLoopTests(unittest.TestCase):
             np.testing.assert_array_equal(sent.args[0], shown)
         self.assertTrue(np.any(preview[2] != frames[2]))
         self.assertTrue(np.any(preview[3] != frames[3]))
-        self.assertTrue(np.any(preview[4] != frames[1]))  # Tronco persistente.
+        self.assertTrue(np.any(preview[4] != frames[1]))  # Tronco permanece.
         recognizer.recognize_joined_hands.assert_called_once()
         sound.play.assert_called_once()
         sound.close.assert_called_once()

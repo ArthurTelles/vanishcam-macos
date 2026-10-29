@@ -123,7 +123,7 @@ def _smoke_layer(frame: np.ndarray, anchor: tuple[int, int, int],
     fade = max(0.0, 1.0 - max(0.0, age - 0.33) / 1.12)
     if fade <= 0:
         return
-    # Smoke only occupies the area around the log; avoid allocating and
+    # Smoke only occupies the area around the log. Avoid allocating and
     # blending a full-size RGBA video frame twice per animation frame.
     margin = int(size * 1.35)
     left, top = max(0, cx - margin), max(0, cy - margin)
